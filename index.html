@@ -1,0 +1,102 @@
+<!-- Generator Protection Simulation Website -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Protection Simulation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-4 text-green-700">Generator Protection Simulation</h1>
+
+        <div class="grid grid-cols-1 gap-4 mb-6">
+            <div class="bg-white p-4 rounded shadow">
+                <h2 class="text-xl font-bold mb-2">Enter Generator Parameters</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Current (A):</label>
+                        <input type="number" id="current" class="border p-2 w-full" value="1200">
+                    </div>
+                    <div>
+                        <label>Voltage (p.u.):</label>
+                        <input type="number" id="voltage" class="border p-2 w-full" value="1.05">
+                    </div>
+                    <div>
+                        <label>Frequency (Hz):</label>
+                        <input type="number" id="frequency" class="border p-2 w-full" value="50">
+                    </div>
+                    <div>
+                        <label>Power (MW):</label>
+                        <input type="number" id="power" class="border p-2 w-full" value="-0.01">
+                    </div>
+                </div>
+                <button onclick="simulateProtection()" class="bg-green-700 text-white px-4 py-2 rounded mt-4">Simulate</button>
+            </div>
+
+            <div class="bg-white p-4 rounded shadow">
+                <h2 class="text-xl font-bold mb-2">Event Log</h2>
+                <pre id="eventLog" class="overflow-y-auto max-h-60 bg-gray-200 p-2 rounded"></pre>
+            </div>
+
+            <div class="bg-white p-4 rounded shadow">
+                <h2 class="text-xl font-bold mb-2">Graphical Representation</h2>
+                <canvas id="protectionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function simulateProtection() {
+            const current = parseFloat(document.getElementById('current').value);
+            const voltage = parseFloat(document.getElementById('voltage').value);
+            const frequency = parseFloat(document.getElementById('frequency').value);
+            const power = parseFloat(document.getElementById('power').value);
+            const eventLog = document.getElementById('eventLog');
+
+            eventLog.innerText = "";
+
+            if (current > 1000) {
+                eventLog.innerText += 'Overcurrent Trip Activated\n';
+            }
+            if (voltage > 1.1 || voltage < 0.9) {
+                eventLog.innerText += 'Voltage Protection Activated\n';
+            }
+            if (frequency > 51 || frequency < 49) {
+                eventLog.innerText += 'Frequency Protection Activated\n';
+            }
+            if (power < 0.05) {
+                eventLog.innerText += 'Reverse Power Trip Activated\n';
+            }
+
+            drawChart(frequency);
+        }
+
+        function drawChart(frequency) {
+            const ctx = document.getElementById('protectionChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 100}, (_, i) => 48 + i * 0.04),
+                    datasets: [{
+                        label: 'Frequency Protection',
+                        data: Array.from({length: 100}, (_, i) => (48 + i * 0.04) > 51 || (48 + i * 0.04) < 49 ? 1 : 0),
+                        borderColor: 'red',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { title: { display: true, text: 'Frequency (Hz)' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
